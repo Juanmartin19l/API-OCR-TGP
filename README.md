@@ -1,43 +1,69 @@
-# PaddleOCR - Extracción de Texto con OCR
+# PaddleOCR
 
-Script de Python para extraer texto de imágenes usando PaddleOCR, optimizado para español y CPU.
+Extracción de texto con OCR - API REST + Script CLI
 
-## Características
+## Stack
 
-- Reconocimiento OCR en español (modelo `latin_PP-OCRv5_mobile_rec`)
-- Procesamiento paralelo de múltiples imágenes
-- Extracción de texto, bounding boxes y confianza
-- Salida en JSON estructurada
-- Optimizado para CPU (sin GPU)
+- **FastAPI** - API REST
+- **PaddleOCR** - Motor OCR
+- **uv** - Gestor de paquetes
+- **Docker** - Contenedor
 
-## Estructura
+## Versiones
 
-```terminal
-paddle/
-├── ocr_proceso.py    # Script principal
-├── output/           # Resultados JSON
-├── SETUP.md          # Instrucciones de instalación
-└── README.md         # Este archivo
-```
+| Paquete | Versión |
+|---------|---------|
+| paddlepaddle | 3.2.2 |
+| paddleocr | 3.3.3 |
 
-## Uso
+## Uso con Docker
 
 ```bash
-# Una imagen
-python ocr_proceso.py foto.png
+# Build
+docker build -t paddle-ocr-api .
 
-# Varias imágenes
-python ocr_proceso.py img1.png img2.jpg
-
-# Carpeta completa
-python ocr_proceso.py "./carpeta/"
+# Run
+docker run -p 8000:8000 paddle-ocr-api
 ```
 
-## Salida JSON
+## Uso con Docker Compose
+
+```bash
+docker compose up
+```
+
+## Endpoints API
+
+### Health Check
+
+```bash
+GET /health
+```
+
+### OCR Single Image
+
+```bash
+POST /ocr
+Content-Type: multipart/form-data
+
+curl -X POST "http://localhost:8000/ocr" -F "file=@imagen.png"
+```
+
+### OCR Batch (máx. 20 imágenes)
+
+```bash
+POST /ocr/batch
+Content-Type: multipart/form-data
+
+curl -X POST "http://localhost:8000/ocr/batch" \
+  -F "files=@img1.png" -F "files=@img2.jpg"
+```
+
+## Respuesta API
 
 ```json
 {
-  "imagen": "ruta/a/imagen.png",
+  "nombre_archivo": "imagen.png",
   "resultados": [
     {
       "texto": "Texto detectado",
@@ -49,10 +75,24 @@ python ocr_proceso.py "./carpeta/"
 }
 ```
 
-## Dependencias
+## Script CLI
 
-- Python 3.10+
-- paddlepaddle==3.2.2
-- paddleocr>=3.3.0
+```bash
+# Una imagen
+uv run --no-sync python ocr_proceso.py foto.png
 
-Ver `SETUP.md` para instrucciones de instalación.
+# Varias imágenes
+uv run --no-sync python ocr_proceso.py img1.png img2.jpg
+
+# Carpeta
+uv run --no-sync python ocr_proceso.py "./carpeta/"
+```
+
+## Desarrollo Local
+
+```bash
+uv pip install fastapi uvicorn python-multipart
+uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+uv pip install paddleocr --index-url https://pypi.org/simple/
+uv run uvicorn src.main:app --reload --port 8000
+```
