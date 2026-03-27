@@ -1,6 +1,5 @@
 import json
 import multiprocessing as mp
-import time
 from pathlib import Path
 
 from paddleocr import PaddleOCR
@@ -41,7 +40,7 @@ def procesar_una_imagen(ruta_imagen: str) -> dict:
     return _procesar_en_worker(ruta_imagen)
 
 
-def procesar_varias_imagenes(rutas: list[str], workers: int = None) -> list[dict]:
+def procesar_varias_imagenes(rutas: list[str], workers: int = None) -> list[dict]:  # type: ignore
     if workers is None:
         workers = max(1, mp.cpu_count() - 1)
 
@@ -49,13 +48,18 @@ def procesar_varias_imagenes(rutas: list[str], workers: int = None) -> list[dict
         return pool.map(_procesar_en_worker, rutas)
 
 
-def guardar_json(datos: dict):
+def guardar_json(datos: dict, carpeta_salida: Path = None):  # type: ignore
     confianzas = [r["confianza"] for r in datos["resultados"]]
     datos["confianza_promedio"] = (
         round(sum(confianzas) / len(confianzas), 4) if confianzas else 0.0
     )
 
-    output_path = Path(datos["imagen"]).with_suffix(".json")
+    if carpeta_salida is None:
+        carpeta_salida = Path(__file__).parent / "output"
+    carpeta_salida.mkdir(parents=True, exist_ok=True)
+
+    nombre_json = Path(datos["imagen"]).stem + ".json"
+    output_path = carpeta_salida / nombre_json
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(datos, f, indent=2, ensure_ascii=False)
     print(f"Guardado: {output_path}")
@@ -96,8 +100,9 @@ def main():
         resultados = procesar_varias_imagenes(archivos, workers)
 
     print()
+    carpeta_salida = Path(__file__).parent / "output"
     for datos in resultados:
-        guardar_json(datos)
+        guardar_json(datos, carpeta_salida)
 
     tiempo_total = 0
     for datos in resultados:

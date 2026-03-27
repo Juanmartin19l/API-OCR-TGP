@@ -3,8 +3,8 @@ name = "paddle"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "paddlepaddle==3.2.0",
-    "paddleocr",
+    "paddlepaddle==3.2.2",
+    "paddleocr>=3.3.0",
 ]
 
 [tool.uv]
