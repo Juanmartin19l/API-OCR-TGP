@@ -1,17 +1,20 @@
 [project]
 name = "paddle-ocr-api"
 version = "1.0.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]",
     "python-multipart",
     "paddlepaddle==3.2.2",
     "paddleocr>=3.3.0",
+    "scalar-fastapi>=1.8.1",
+    "pymupdf>=1.23.0",
+    "pydantic-settings",
 ]
 
 [[tool.uv.index]]
-url = "https://pypi.org/simple/"
+url = "https://pypi.org/simple"
 name = "pypi"
 default = true
 
