@@ -21,7 +21,6 @@ MAX_FILES = 10
         "png, jpg, jpeg, bmp, gif, pdf."
     ),
     operation_id="upload_files",
-    tags=["ocr"],
 )
 async def upload_files(
     files: list[UploadFile] = File(...), ocr: OCRService = Depends(get_ocr_service)
@@ -38,5 +37,24 @@ async def upload_files(
     for file in files:
         item = await process_single_file(file, ocr)
         resultados.append(item)
+
+    failed = [i for i in resultados if not i.ok]
+    if failed:
+        has_processing_error = any(f.error_code == "processing_error" for f in failed)
+        status_code = 500 if has_processing_error else 400
+        detalle = {
+            "message": "Algunos archivos fallaron en el procesamiento",
+            "failed_files": [
+                {
+                    "nombre_archivo": f.nombre_archivo,
+                    "error_code": f.error_code,
+                    "error_message": f.error_message,
+                }
+                for f in failed
+            ],
+            "total_processed": len(resultados) - len(failed),
+            "total_failed": len(failed),
+        }
+        raise HTTPException(status_code=status_code, detail=detalle)
 
     return {"total_imagenes": len(resultados), "resultados_por_archivo": resultados}
