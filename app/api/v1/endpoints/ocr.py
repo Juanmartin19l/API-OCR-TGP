@@ -21,6 +21,60 @@ MAX_FILES = 10
         "png, jpg, jpeg, bmp, gif, pdf."
     ),
     operation_id="upload_files",
+    responses={
+        400: {
+            "description": "Bad Request - uno o varios archivos no válidos",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "invalid_files": {
+                            "summary": "Ejemplo de error 400 por archivos inválidos",
+                            "value": {
+                                "detail": {
+                                    "message": "Algunos archivos fallaron en el procesamiento",
+                                    "failed_files": [
+                                        {
+                                            "nombre_archivo": "doc1.txt",
+                                            "error_code": "invalid_format",
+                                            "error_message": "Formato no soportado. Vuelva a subir un archivo con extensión png, jpg, jpeg, bmp, gif o pdf.",
+                                        }
+                                    ],
+                                    "total_processed": 0,
+                                    "total_failed": 1,
+                                }
+                            },
+                        }
+                    }
+                }
+            },
+        },
+        500: {
+            "description": "Internal Server Error - fallo en el procesamiento de uno o varios archivos",
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "processing_error": {
+                            "summary": "Ejemplo de error 500 por fallo interno",
+                            "value": {
+                                "detail": {
+                                    "message": "Algunos archivos fallaron en el procesamiento",
+                                    "failed_files": [
+                                        {
+                                            "nombre_archivo": "doc2.pdf",
+                                            "error_code": "processing_error",
+                                            "error_message": "Se produjo un error al procesar este archivo. Por favor vuelva a subirlo.",
+                                        }
+                                    ],
+                                    "total_processed": 0,
+                                    "total_failed": 1,
+                                }
+                            },
+                        }
+                    }
+                }
+            },
+        },
+    },
 )
 async def upload_files(
     files: list[UploadFile] = File(...), ocr: OCRService = Depends(get_ocr_service)
