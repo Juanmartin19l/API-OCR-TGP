@@ -43,10 +43,6 @@ def create_app() -> FastAPI:
             openapi_url=app.openapi_url, title="OCR API Documentation"
         )
 
-    @app.get("/health")
-    async def health_check():
-        return {"status": "healthy"}
-
     return app
 
 
