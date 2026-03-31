@@ -6,6 +6,11 @@ dist/
 wheels/
 *.egg-info
 
+*.agents
+.ruff_cache
+
+skills-lock.json
+
 # Virtual environments
 .venv
 
