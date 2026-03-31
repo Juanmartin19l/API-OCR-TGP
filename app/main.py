@@ -18,7 +18,23 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="OCR API", version="1.0.0", lifespan=lifespan)
+    tags_metadata = [
+        {
+            "name": "ocr",
+            "description": "Endpoints para subir archivos y obtener resultados OCR",
+        }
+    ]
+
+    app = FastAPI(
+        title="OCR API",
+        version="1.0.0",
+        description=(
+            "API para extraer texto de imágenes y PDFs usando PaddleOCR. \n"
+            "Soporta subida de múltiples archivos y devuelve un resultado por archivo."
+        ),
+        lifespan=lifespan,
+        openapi_tags=tags_metadata,
+    )
     app.include_router(api_router, prefix=settings.API_V1_STR)
 
     @app.get("/scalar", include_in_schema=False)

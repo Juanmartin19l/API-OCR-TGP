@@ -6,7 +6,7 @@ class OCRResult(BaseModel):
     texto: str
     confianza: float
     caja: List[int]
-    pagina: Optional[int] = None  # 1-indexed page number (None for single-image input)
+    pagina: Optional[int] = None
 
 
 class OCRResponse(BaseModel):
@@ -18,6 +18,19 @@ class OCRResponse(BaseModel):
     )
 
 
+class OCRBatchItem(BaseModel):
+    nombre_archivo: str
+    ok: bool = Field(..., description="True si el archivo se procesó correctamente")
+    resultado: Optional[OCRResponse] = None
+    error_code: Optional[str] = Field(
+        None,
+        description="Código corto del error (ej. invalid_format, processing_error)",
+    )
+    error_message: Optional[str] = Field(
+        None, description="Mensaje legible para el usuario con la acción sugerida"
+    )
+
+
 class OCRBatchResponse(BaseModel):
     total_imagenes: int
-    resultados_por_archivo: List[OCRResponse]
+    resultados_por_archivo: List[OCRBatchItem]

@@ -1,91 +1,42 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from app.core.di import get_ocr_service
 from app.services.ocr_service import OCRService
-from app.models import OCRResponse, OCRResult
+from app.models import OCRBatchResponse
+from app.api.v1.services.ocr_helpers import process_single_file
 
 router = APIRouter()
 
 
-@router.post("/upload", response_model=OCRResponse)
-async def recognize(
-    file: UploadFile = File(...), ocr: OCRService = Depends(get_ocr_service)
-):
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="No se proporcionó archivo")
-
-    ext = file.filename.split(".")[-1].lower()
-    if f".{ext}" not in [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".pdf"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Formato no soportado. Use: png, jpg, jpeg, bmp, gif, pdf",
-        )
-
-    try:
-        content = await file.read()
-        datos = await ocr.process_image(content)
-
-        resultados = [
-            OCRResult(
-                texto=r["texto"],
-                confianza=r["confianza"],
-                caja=r["caja"],
-                pagina=r.get("pagina"),
-            )
-            for r in datos["resultados"]
-        ]
-
-        return OCRResponse(
-            nombre_archivo=file.filename,
-            resultados=resultados,
-            confianza_promedio=datos["confianza_promedio"],
-            total_paginas=datos.get("total_paginas", 1),
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# Configurable máximo de archivos por petición. Cambiar a None para sin límite.
+MAX_FILES = 10
 
 
-@router.post("/upload/batch", response_model=dict)
-async def recognize_batch(
+@router.post(
+    "/upload",
+    response_model=OCRBatchResponse,
+    summary="Procesar uno o varios archivos para OCR",
+    description=(
+        "Acepta uno o varios archivos (imágenes o PDFs). Devuelve siempre un objeto "
+        "con total_imagenes y resultados_por_archivo. Extensiones soportadas: "
+        "png, jpg, jpeg, bmp, gif, pdf."
+    ),
+    operation_id="upload_files",
+    tags=["ocr"],
+)
+async def upload_files(
     files: list[UploadFile] = File(...), ocr: OCRService = Depends(get_ocr_service)
 ):
-    if len(files) > 20:
-        raise HTTPException(status_code=400, detail="Máximo 20 archivos por request")
+    if not files:
+        raise HTTPException(status_code=400, detail="No se proporcionó ningún archivo")
 
-    resultados_por_archivo = []
+    if MAX_FILES is not None and len(files) > MAX_FILES:
+        raise HTTPException(
+            status_code=400, detail=f"Máximo {MAX_FILES} archivos por request"
+        )
 
+    resultados = []
     for file in files:
-        ext = file.filename.split(".")[-1].lower()
-        if f".{ext}" not in [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".pdf"]:
-            continue
+        item = await process_single_file(file, ocr)
+        resultados.append(item)
 
-        try:
-            content = await file.read()
-            datos = await ocr.process_image(content)
-
-            resultados = [
-                {
-                    "texto": r["texto"],
-                    "confianza": r["confianza"],
-                    "caja": r["caja"],
-                    "pagina": r.get("pagina"),
-                }
-                for r in datos["resultados"]
-            ]
-
-            resultados_por_archivo.append(
-                {
-                    "nombre_archivo": file.filename,
-                    "resultados": resultados,
-                    "confianza_promedio": datos["confianza_promedio"],
-                    "total_paginas": datos.get("total_paginas", 1),
-                }
-            )
-        except Exception:
-            continue
-
-    return {
-        "total_imagenes": len(resultados_por_archivo),
-        "resultados_por_archivo": resultados_por_archivo,
-    }
+    return {"total_imagenes": len(resultados), "resultados_por_archivo": resultados}
