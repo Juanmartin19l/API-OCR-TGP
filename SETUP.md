@@ -11,23 +11,23 @@
 python -m venv .venv
 source .venv/bin/activate   # Linux / macOS
 .venv\Scripts\activate     # Windows (PowerShell)
-pip install --upgrade pip
-pip install -r requirements.txt
+uv pip install --upgrade pip
+uv pip install -r requirements.txt
 ```
 
 Si no dispone de `requirements.txt`, instalar dependencias mínimas:
 
 ```bash
-pip install fastapi uvicorn python-multipart
-pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
-pip install paddleocr
+uv pip install fastapi uvicorn python-multipart
+uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+uv pip install paddleocr
 ```
 
 ### Ejecutar (local)
 
 ```bash
-uvicorn app.main:app --reload --port 8000
-```
+uv run uvicorn app.main:app --reload --port 8000
+``` 
 
 ### Uso de la CLI (scripts locales)
 
