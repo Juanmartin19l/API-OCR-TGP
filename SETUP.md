@@ -1,47 +1,53 @@
-# PaddleOCR - Setup y Ejecución
+## PaddleOCR — Instalación y ejecución
 
-## Requisitos
+### Requisitos
 
-- Python 3.10+
-- Windows
-- uv (gestor de paquetes)
+- Python 3.10 o superior
+- Acceso a Internet para la descarga de dependencias y modelos
 
-## Instalación
-
-```bash
-# Instalar dependencias
-uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
-uv pip install "paddleocr>=3.3.0" --index-url https://pypi.org/simple/
-```
-
-## Versiones
-
-| Paquete      | Versión |
-| ------------ | ------- |
-| paddlepaddle | 3.2.2   |
-| paddleocr    | 3.3.3   |
-
-## Ejecución
+### Instalación (entorno virtual)
 
 ```bash
-# Una imagen
-uv run --no-sync python ocr_proceso.py imagen.png
-
-# Varias imágenes
-uv run --no-sync python ocr_proceso.py img1.png img2.jpg img3.png
-
-# Carpeta completa
-uv run --no-sync python ocr_proceso.py "./fotos/"
+python -m venv .venv
+source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\activate     # Windows (PowerShell)
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-## Salida
+Si no dispone de `requirements.txt`, instalar dependencias mínimas:
 
-Los resultados JSON se guardan en la carpeta `output/`.
+```bash
+pip install fastapi uvicorn python-multipart
+pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+pip install paddleocr
+```
 
-## Solución de Problemas
+### Ejecutar (local)
 
-| Problema       | Solución                                                           |
-| -------------- | ------------------------------------------------------------------ |
-| Error Shapely  | `uv pip install shapely`                                           |
-| Modelos lentos | Los modelos se descargan automáticamente en el primer uso (~200MB) |
-| Error GPU/CUDA | Asegurarse de usar `device='cpu'` en el script                     |
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+### Uso de la CLI (scripts locales)
+
+```bash
+# Procesar una imagen
+python ocr_proceso.py imagen.png
+
+# Procesar varias imágenes
+python ocr_proceso.py img1.png img2.jpg
+
+# Procesar una carpeta
+python ocr_proceso.py "./fotos/"
+```
+
+### Salida
+
+Los resultados se registran en salida estándar y, según la configuración, pueden guardarse en `output/`.
+
+### Resolución de problemas
+
+- Error relacionado con dependencias nativas: instale paquetes requeridos para su plataforma (por ejemplo `libjpeg`, `zlib`).
+- Problemas con GPU/CUDA: asegúrese de instalar la versión de PaddlePaddle compatible con GPU y que los drivers estén instalados.
+- Modelos: la descarga del modelo puede tardar en la primera ejecución (descarga automática, ~200MB).

@@ -1,98 +1,114 @@
-# PaddleOCR
+# OCR API (PaddleOCR)
 
-Extracción de texto con OCR - API REST + Script CLI
+API REST para extracción de texto a partir de imágenes y PDFs usando PaddleOCR. Proporciona un endpoint HTTP para procesar uno o varios archivos y devuelve resultados estructurados por archivo. Está diseñada para integrarse con otros servicios y para operaciones por lotes.
 
-## Stack
+Características principales
 
-- **FastAPI** - API REST
-- **PaddleOCR** - Motor OCR
-- **uv** - Gestor de paquetes
-- **Docker** - Contenedor
+- Endpoint unificado para subida de archivos (soporta múltiples archivos multipart/form-data).
+- Procesamiento por archivo con respuesta detallada en caso de error.
+- Modo fail-fast: si algún archivo falla durante el procesamiento la API retorna un error (HTTP 400 o 500) con detalle de los archivos fallidos.
+- Documentación OpenAPI disponible en /docs (Swagger UI) y /redoc.
 
-## Versiones
+Requisitos
 
-| Paquete | Versión |
-|---------|---------|
-| paddlepaddle | 3.2.2 |
-| paddleocr | 3.3.3 |
+- Python 3.10 o superior
+- Docker (opcional)
 
-## Uso con Docker
+Instalación rápida (entorno virtual)
 
 ```bash
-# Build
-docker build -t paddle-ocr-api .
+python -m venv .venv
+source .venv/bin/activate   # Linux / macOS
+.venv\Scripts\activate     # Windows (PowerShell)
+pip install --upgrade pip
+pip install fastapi uvicorn python-multipart
+# Instalar PaddlePaddle (CPU) y PaddleOCR, ajustar según plataforma
+pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
+pip install paddleocr
+```
 
-# Run
+Ejecución local
+
+```bash
+uvicorn app.main:app --reload --port 8000
+# Documentación: http://127.0.0.1:8000/docs (Swagger) /redoc (Redoc)
+```
+
+Uso con Docker
+
+```bash
+docker build -t paddle-ocr-api .
 docker run -p 8000:8000 paddle-ocr-api
 ```
 
-## Uso con Docker Compose
+Uso con Docker Compose
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-## Endpoints API
+Endpoints principales
 
-### Health Check
+- GET /health
+  - Health check simple que devuelve {"status": "healthy"}.
+- POST /api/v1/ocr/upload
+  - Descripción: sube uno o varios archivos en multipart/form-data.
+  - Campo: files (array de archivos)
+  - Respuesta 200: OCRBatchResponse cuando todos los archivos se procesan correctamente.
+  - Respuesta 400/500: en caso de fallos (fail-fast). El body de error incluye detalle.failed_files con información por archivo.
+
+Ejemplo de uso (curl)
 
 ```bash
-GET /health
+curl -X POST "http://127.0.0.1:8000/api/v1/ocr/upload" \
+  -F "files=@doc1.png" -F "files=@doc2.pdf"
 ```
 
-### OCR Single Image
-
-```bash
-POST /ocr
-Content-Type: multipart/form-data
-
-curl -X POST "http://localhost:8000/ocr" -F "file=@imagen.png"
-```
-
-### OCR Batch (máx. 20 imágenes)
-
-```bash
-POST /ocr/batch
-Content-Type: multipart/form-data
-
-curl -X POST "http://localhost:8000/ocr/batch" \
-  -F "files=@img1.png" -F "files=@img2.jpg"
-```
-
-## Respuesta API
+Ejemplo de respuesta exitosa (parcializado)
 
 ```json
 {
-  "nombre_archivo": "imagen.png",
-  "resultados": [
+  "total_imagenes": 1,
+  "resultados_por_archivo": [
     {
-      "texto": "Texto detectado",
-      "confianza": 0.9982,
-      "caja": [x1, y1, x2, y2]
+      "nombre_archivo": "doc1.png",
+      "ok": true,
+      "resultado": {
+        "nombre_archivo": "doc1.png",
+        "resultados": [
+          { "texto": "Texto detectado", "confianza": 0.9982, "caja": [0,0,100,20], "pagina": 1 }
+        ],
+        "confianza_promedio": 0.9982,
+        "total_paginas": 1
+      },
+      "error_code": null,
+      "error_message": null
     }
-  ],
-  "confianza_promedio": 0.9982
+  ]
 }
 ```
 
-## Script CLI
+Ejemplo de error (fail-fast)
 
-```bash
-# Una imagen
-uv run --no-sync python ocr_proceso.py foto.png
-
-# Varias imágenes
-uv run --no-sync python ocr_proceso.py img1.png img2.jpg
-
-# Carpeta
-uv run --no-sync python ocr_proceso.py "./carpeta/"
+```json
+{
+  "detail": {
+    "message": "Algunos archivos fallaron en el procesamiento",
+    "failed_files": [
+      { "nombre_archivo": "doc2.pdf", "error_code": "processing_error", "error_message": "Se produjo un error al procesar este archivo. Por favor vuelva a subirlo." }
+    ],
+    "total_processed": 0,
+    "total_failed": 1
+  }
+}
 ```
 
-## Desarrollo Local
+Contribuir
 
-```bash
-uv pip install fastapi uvicorn python-multipart
-uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
-uv pip install paddleocr --index-url https://pypi.org/simple/
-uv run uvicorn src.main:app --reload --port 8000
-```
+1. Abrir un issue describiendo el cambio o bug.
+2. Crear una rama con un nombre descriptivo.
+3. Enviar un pull request con descripción y pruebas (si procede).
+
+Licencia
+
+Este proyecto se entrega bajo la licencia MIT.
