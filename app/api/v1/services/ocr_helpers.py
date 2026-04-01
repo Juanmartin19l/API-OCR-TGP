@@ -1,6 +1,5 @@
 import logging
 from fastapi import UploadFile
-from typing import Optional
 from app.services.ocr_service import OCRService
 from app.models import OCRResponse, OCRResult, OCRBatchItem
 
