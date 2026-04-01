@@ -5,23 +5,20 @@
 - Python 3.10 o superior
 - Acceso a Internet para la descarga de dependencias y modelos
 
+
 ### Instalación (entorno virtual)
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate   # Linux / macOS
 .venv\Scripts\activate     # Windows (PowerShell)
-uv pip install --upgrade pip
-uv pip install -r requirements.txt
+# Instale el gestor 'uv' si no está disponible
+pip install uv
+# Descargar e instalar las dependencias definidas para el proyecto
+uv sync
 ```
 
-Si no dispone de `requirements.txt`, instalar dependencias mínimas:
-
-```bash
-uv pip install fastapi uvicorn python-multipart
-uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
-uv pip install paddleocr
-```
+Si prefiere instalar paquetes manualmente, utilice el gestor 'uv' para ejecutar comandos pip: `uv pip install <paquete>`.
 
 ### Ejecutar (local)
 

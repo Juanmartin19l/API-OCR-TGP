@@ -14,17 +14,17 @@ Requisitos
 - Python 3.10 o superior
 - Docker (opcional)
 
+
 Instalación rápida (entorno virtual)
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate   # Linux / macOS
 .venv\Scripts\activate     # Windows (PowerShell)
-uv pip install --upgrade pip
-uv pip install fastapi uvicorn python-multipart
-# Instalar PaddlePaddle (CPU) y PaddleOCR; ajustar según plataforma
-uv pip install paddlepaddle==3.2.2 --index-url https://www.paddlepaddle.org.cn/packages/stable/cpu/
-uv pip install paddleocr
+# Instale el gestor 'uv' si no está disponible
+pip install uv
+# Sin fichero requirements: instalar paquetes definidos en el proyecto con uv
+uv sync
 ```
 
 Ejecución local
