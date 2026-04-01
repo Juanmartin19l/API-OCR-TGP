@@ -21,9 +21,7 @@ Instalación rápida (entorno virtual)
 python -m venv .venv
 source .venv/bin/activate   # Linux / macOS
 .venv\Scripts\activate     # Windows (PowerShell)
-# Instale el gestor 'uv' si no está disponible
 pip install uv
-# Sin fichero requirements: instalar paquetes definidos en el proyecto con uv
 uv sync
 ```
 
@@ -31,7 +29,6 @@ Ejecución local
 
 ```bash
 uv run uvicorn app.main:app --reload --port 8000
-# Documentación: http://127.0.0.1:8000/docs (Swagger) /redoc (Redoc)
 ```
 
 Uso con Docker
@@ -49,8 +46,6 @@ docker compose up --build
 
 Endpoints principales
 
-- GET /health
-  - Health check simple que devuelve {"status": "healthy"}.
 - POST /api/v1/ocr/upload
   - Descripción: sube uno o varios archivos en multipart/form-data.
   - Campo: files (array de archivos)

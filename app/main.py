@@ -4,7 +4,6 @@ from app.core.config import get_settings
 from app.core.di import get_ocr_service
 from app.api.v1.router import api_router
 from scalar_fastapi import get_scalar_api_reference
-from fastapi import FastAPI
 
 settings = get_settings()
 ocr_service = get_ocr_service()

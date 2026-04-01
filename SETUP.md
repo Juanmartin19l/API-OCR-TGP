@@ -3,7 +3,6 @@
 ### Requisitos
 
 - Python 3.10 o superior
-- Acceso a Internet para la descarga de dependencias y modelos
 
 
 ### Instalación (entorno virtual)
@@ -12,13 +11,9 @@
 python -m venv .venv
 source .venv/bin/activate   # Linux / macOS
 .venv\Scripts\activate     # Windows (PowerShell)
-# Instale el gestor 'uv' si no está disponible
 pip install uv
-# Descargar e instalar las dependencias definidas para el proyecto
 uv sync
 ```
-
-Si prefiere instalar paquetes manualmente, utilice el gestor 'uv' para ejecutar comandos pip: `uv pip install <paquete>`.
 
 ### Ejecutar (local)
 
