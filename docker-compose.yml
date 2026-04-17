@@ -1,3 +1,5 @@
 services:
   ocr-api:
     build: .
+  ports:
+    - "8000"
