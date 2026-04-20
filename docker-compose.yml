@@ -1,8 +1,8 @@
 services:
   ocr-api:
-    build: 
-      context:
-  enviroment:
-    - PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
-    - PORT=8000
-  restart: always
+    build:
+      context: .
+    environment:
+      - PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
+      - PORT=8000
+    restart: always
